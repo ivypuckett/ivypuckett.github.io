@@ -27,6 +27,14 @@
     <label for="saturation">Saturation Shift</label><input id="saturationShift" oninput="updatePalette()" type="range"
         min="1" max="100" value="50" />
     <div id="huePreview"></div>
+    <button type="button" onclick="exportCSS()">Export CSS</button>
+    <dialog id="exportDialog">
+        <textarea id="cssOutput" readonly rows="20" cols="50"></textarea>
+        <div>
+            <button type="button" onclick="copyCSS()">Copy</button>
+            <button type="button" onclick="document.getElementById('exportDialog').close()">Close</button>
+        </div>
+    </dialog>
 </form>
 
 <style>
@@ -56,6 +64,25 @@
                 hsl(360 100% 50%));
 
         background-blend-mode: screen;
+    }
+
+    #exportDialog {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    #exportDialog textarea {
+        width: 100%;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
+    #exportDialog div {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        justify-content: flex-end;
     }
 </style>
 
@@ -280,6 +307,29 @@
     }
     function hideRotations() { document.querySelector('#rotationsWrapper').style = 'display:none;' }
     function showRotations() { document.querySelector('#rotationsWrapper').style = 'display:flex;flex-direction:column;' }
+
+    function exportCSS() {
+        let css = ':root {\n'
+        let row = 0
+        for (let range of palette) {
+            let column = 0
+            for (let stop of range) {
+                let [hue, saturation, brightness] = stop
+                css += `  --color-${row}-${column}: hsl(${hue}, ${saturation}%, ${brightness}%);\n`
+                column++
+            }
+            row++
+        }
+        css += '}\n'
+
+        document.getElementById('cssOutput').value = css
+        document.getElementById('exportDialog').showModal()
+    }
+
+    function copyCSS() {
+        const textarea = document.getElementById('cssOutput')
+        navigator.clipboard.writeText(textarea.value)
+    }
 
     // Math
 
